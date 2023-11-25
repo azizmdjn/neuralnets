@@ -1,4 +1,4 @@
-"""Seminar 6. Image Binary Classification with Keras. ML ops."""
+"""Seminar 5. Convolutional Networks"""
 
 import argparse
 import os
@@ -6,17 +6,17 @@ import zipfile
 import shutil
 from urllib.request import urlretrieve
 
-import tensorflow as tf
+import tensorflow
 import boto3
 import dotenv
-
+import tensorflow as tf
 
 DATA_URL = 'https://storage.yandexcloud.net/fa-bucket/cats_dogs_train.zip'
 PATH_TO_DATA_ZIP = 'data/raw/cats_dogs_train.zip'
 PATH_TO_DATA = 'data/raw/cats_dogs_train'
 PATH_TO_MODEL = 'models/model_6'
 BUCKET_NAME = 'neuralnets2023'
-# todo fix your git user name and copy .env to project root
+# todo fix your git user name and copy ..env to project root
 YOUR_GIT_USER = 'azizmdjn'
 
 image_size = (180, 180)
@@ -36,6 +36,7 @@ def download_data():
             zip_ref.extractall(PATH_TO_DATA)
     else:
         print('Data is already extracted!')
+
 
 def get_data(augmentation=True):
     num_skipped = 0
@@ -67,10 +68,10 @@ def get_data(augmentation=True):
     )
 
     if augmentation:
-        data_augmentation = tf.keras.Sequential(
+        data_augmentation = tensorflow.keras.Sequential(
             [
-                tf.keras.layers.RandomFlip("horizontal"),
-                tf.keras.layers.RandomRotation(0.1),
+                tensorflow.keras.layers.RandomFlip("horizontal"),
+                tensorflow.keras.layers.RandomRotation(0.1),
             ]
         )
         train_ds = train_ds.map(
@@ -84,40 +85,39 @@ def get_data(augmentation=True):
 
     return train_ds, val_ds
 
-
 def make_model(input_shape, num_classes):
-    inputs = tf.keras.keras.Input(shape=input_shape)
+    inputs = tensorflow.keras.Input(shape=input_shape)
 
-    x = tf.keras.layers.Rescaling(1.0 / 255)(inputs)
-    x = tf.keras.layers.Conv2D(128, 3, strides=2, padding="same")(x)
-    x = tf.keras.layers.BatchNormalization()(x)
-    x = tf.keras.layers.Activation("relu")(x)
+    x = tensorflow.keras.layers.Rescaling(1.0 / 255)(inputs)
+    x = tensorflow.keras.layers.Conv2D(128, 3, strides=2, padding="same")(x)
+    x = tensorflow.keras.layers.BatchNormalization()(x)
+    x = tensorflow.keras.layers.Activation("relu")(x)
 
     previous_block_activation = x  # Set aside residual
 
     for size in [256, 512, 728]:
-        x = tf.keras.layers.Activation("relu")(x)
-        x = tf.keras.layers.SeparableConv2D(size, 3, padding="same")(x)
-        x = tf.keras.layers.BatchNormalization()(x)
+        x = tensorflow.keras.layers.Activation("relu")(x)
+        x = tensorflow.keras.layers.SeparableConv2D(size, 3, padding="same")(x)
+        x = tensorflow.keras.layers.BatchNormalization()(x)
 
-        x = tf.keras.layers.Activation("relu")(x)
-        x = tf.keras.layers.SeparableConv2D(size, 3, padding="same")(x)
-        x = tf.keras.layers.BatchNormalization()(x)
+        x = tensorflow.keras.layers.Activation("relu")(x)
+        x = tensorflow.keras.layers.SeparableConv2D(size, 3, padding="same")(x)
+        x = tensorflow.keras.layers.BatchNormalization()(x)
 
-        x = tf.keras.layers.MaxPooling2D(3, strides=2, padding="same")(x)
+        x = tensorflow.keras.layers.MaxPooling2D(3, strides=2, padding="same")(x)
 
         # Project residual
-        residual = tf.keras.layers.Conv2D(size, 1, strides=2, padding="same")(
+        residual = tensorflow.keras.layers.Conv2D(size, 1, strides=2, padding="same")(
             previous_block_activation
         )
-        x = tf.keras.layers.add([x, residual])  # Add back residual
+        x = tensorflow.keras.layers.add([x, residual])  # Add back residual
         previous_block_activation = x  # Set aside next residual
 
-    x = tf.keras.layers.SeparableConv2D(1024, 3, padding="same")(x)
-    x = tf.keras.layers.BatchNormalization()(x)
-    x = tf.keras.layers.Activation("relu")(x)
+    x = tensorflow.keras.layers.SeparableConv2D(1024, 3, padding="same")(x)
+    x = tensorflow.keras.layers.BatchNormalization()(x)
+    x = tensorflow.keras.layers.Activation("relu")(x)
 
-    x = tf.keras.layers.GlobalAveragePooling2D()(x)
+    x = tensorflow.keras.layers.GlobalAveragePooling2D()(x)
     if num_classes == 2:
         activation = "sigmoid"
         units = 1
@@ -125,15 +125,16 @@ def make_model(input_shape, num_classes):
         activation = "softmax"
         units = num_classes
 
-    x = tf.keras.layers.Dropout(0.5)(x)
-    outputs = tf.keras.layers.Dense(units, activation=activation)(x)
-    return tf.keras.keras.Model(inputs, outputs)
+    x = tensorflow.keras.layers.Dropout(0.5)(x)
+    outputs = tensorflow.keras.layers.Dense(units, activation=activation)(x)
+    return tensorflow.keras.Model(inputs, outputs)
 
 
 def train():
     """Pipeline: Build, train and save model to models/model_6"""
     # Todo: Copy some code from seminar5 and https://keras.io/examples/vision/image_classification_from_scratch/
     print('Training model')
+
     train_ds, val_ds = get_data(augmentation=True)
 
     model = make_model(input_shape=[*image_size, 3], num_classes=2)
@@ -164,7 +165,7 @@ def upload():
                         format='zip',
                         root_dir=PATH_TO_MODEL)
 
-    config = dotenv.dotenv_values('../.env')
+    config = dotenv.dotenv_values('..env')
 
     ACCESS_KEY = config['ACCESS_KEY']
     SECRET_KEY = config['SECRET_KEY']
