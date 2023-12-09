@@ -26,7 +26,7 @@ BUCKET_NAME = 'neuralnets2023'
 # todo fix your git user name
 YOUR_GIT_USER = 'azizmdjn'
 
-
+#  new
 def download_data():
     """Pipeline: download and extract data"""
     if not os.path.exists(PATH_TO_TRAIN_DATA):
