@@ -91,7 +91,7 @@ def train():
     )
 
 
-def validate(model_path='models\model_7') -> tuple:
+def validate(model_path='models/model_7') -> tuple:
     """
     Validate model on test subset
     todo fit tokenizer on train texts,
